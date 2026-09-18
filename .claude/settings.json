@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude_ai_Notion__notion-fetch",
+      "mcp__claude-in-chrome__navigate",
+      "mcp__plugin_vercel_vercel__list_deployments",
+      "mcp__plugin_vercel_vercel__get_project",
+      "mcp__claude_ai_Notion__notion-search",
+      "mcp__claude-in-chrome__tabs_context_mcp",
+      "mcp__claude_ai_Gmail__search_threads",
+      "Bash(railway logs*)",
+      "mcp__plugin_vercel_vercel__get_deployment_build_logs",
+      "mcp__plugin_vercel_vercel__get_deployment",
+      "Bash(railway status*)",
+      "mcp__claude-in-chrome__read_console_messages",
+      "Bash(vercel env ls*)",
+      "mcp__claude-in-chrome__find",
+      "mcp__plugin_vercel_vercel__list_projects",
+      "mcp__plugin_vercel_vercel__get_runtime_logs",
+      "Bash(vercel --version*)",
+      "mcp__claude_ai_Linear__list_issues",
+      "mcp__claude_ai_Google_Drive__search_files",
+      "mcp__claude-in-chrome__read_network_requests",
+      "Bash(npx next build)",
+      "Bash(npx prisma generate)",
+      "Bash(npm run lint)",
+      "Bash(vercel domains inspect*)"
+    ]
+  }
+}
