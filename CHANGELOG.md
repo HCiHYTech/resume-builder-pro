@@ -1,5 +1,36 @@
 # Changelog
 
+## [v1.1.2] — 2026-09-18
+
+**Task:** Fix "Analyze Resume" (and Tailor/Cover Letter/Enhance) failing with a generic "Failed to analyze resume" / "Failed to fetch" error — env config only, no code changes.
+**Branch:** `chore/dev-config-anthropic-test` (merged to `main` via fast-forward; also added a VS Code launch config, Claude Code permissions, and an Anthropic SDK smoke test script — unrelated dev tooling bundled in the same branch)
+**Status:** Fixed and verified — local dev and production (resume.aifrienddan.com) both confirmed working after billing was resolved.
+
+**Root cause (three stacked issues, found in order):**
+1. `.env.local` didn't exist on Dan's machine — an earlier commit ("Deleted .env.local", 2026-02-24) removed it during a secrets cleanup (it had accidentally committed Stripe/Firebase/JWT secrets alongside `ANTHROPIC_API_KEY`), and nothing ever replaced it locally. Every AI route (`/api/import`, `/api/tailor`, `/api/cover-letter`, `/api/enhance`) throws in `lib/anthropic.ts` when the key is empty, caught by each route's try/catch, surfaced to the UI as a generic failure alert.
+2. First replacement key was created without a workspace selected in the Anthropic console → API returned `"This API key is not scoped to a workspace"` (400). Regenerating with a workspace selected (`resume.svc`, scoped to the resume-builder-pro workspace) fixed it.
+3. Once the key was valid and scoped, both local and production calls failed with `"Your credit balance is too low to access the Anthropic API"` (400) — confirmed via Vercel's `get_runtime_errors` on production traffic, not just local testing. Resolved by adding credits at the Anthropic console for that workspace.
+
+**Files touched:** none in application code. `.env.local` (git-ignored, local machine only) recreated with the new key. No production env var changes were needed — the Vercel-side `ANTHROPIC_API_KEY` was already correctly set and scoped; production was blocked by the same billing issue, not a missing/misconfigured key.
+
+**Commands run (PowerShell — `C:\Users\danimal\Documents\project_workspace\resume-builder-pro`, plus device-bridge shell for diagnostics/merge):**
+```
+notepad .env.local
+npm run dev
+git checkout main
+git merge --ff-only origin/chore/dev-config-anthropic-test
+git push origin main
+```
+
+**Decisions made:**
+- Did not commit or push the whole-repo line-ending (CRLF/LF) diff discovered on this checkout — it touched every tracked file with no functional change; flagging for Dan to handle deliberately (likely a `core.autocrlf` mismatch) rather than burying it in an unrelated fix.
+- Restored `test_anthropic.mjs` after accidentally overwriting its already-committed content with a throwaway debug script of the same name; deleted only the genuinely untracked scratch files (`test_anthropic2.mjs`, `_write_test.txt`).
+- Promoted the `chore/dev-config-anthropic-test` preview build straight to production in Vercel (Dan's call), then fast-forward merged the branch into `main` afterward so GitHub history matches what's actually live.
+
+**Follow-ups:**
+- Consider documenting "regenerate key → must select a workspace" and "check Anthropic billing balance" as an explicit step in onboarding/runbook notes for this repo, since both were non-obvious failure modes that looked identical to a code bug from the UI's generic error alerts.
+- The four AI routes all swallow the real error into a generic message (`'Failed to parse resume'`, etc.) — consider surfacing `error.message` (or at least an error code) to the client so future failures are diagnosable without server log access.
+
 ## [v1.1.1] — 2026-07-21
 
 **Task:** SP-RB-01 verification pass — confirm the 2026-07-10 implementation (v1.1.0) actually works, not just that it was committed. No code changes; QA only.
